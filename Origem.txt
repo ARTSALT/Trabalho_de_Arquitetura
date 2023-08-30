@@ -16,26 +16,46 @@ void main()
     system("chcp 1252");
 
     Label labels[50];
+    string texto;
 
     ifstream fin;
     fin.open("teste.asm", ios_base::in);
+    ifstream ler;
+    ler.open ("Teste.asm", ios_base::in);
 
     int index = 0;
+    int linha = 0;
+
+
+    //while (fin.good())
+    //{
+    //    fin >> labels[index].word;
+    //    
+    //    if (labels[index].word[labels[index].word.length() - 1] != ':')
+    //    {
+    //        labels[index].word.erase();
+    //        index--;
+    //    }
+    //    else
+    //    {
+    //        labels[index].word.pop_back();
+    //        labels[index].linha = linha;
+    //        cout << labels[index].word << ": " << labels[index].linha << endl;
+    //    }
+    //    index++;
+    //}
+
     while (fin.good())
     {
-        fin >> labels[index].word;
+        getline(fin, texto);
 
-        if (labels[index].word[labels[index].word.length() - 1] != ':')
+        size_t found = texto.find(':');
+        if (found != string::npos)
         {
-            labels[index].word.erase();
-            index--;
+            labels[index].word.insert(0, texto, 0, found);
+            labels[index].linha = index;
+            cout << labels[index].word << ": " << labels[index].linha << endl;
         }
-        else
-        {
-            labels[index].word.erase(labels[index].word.length() - 1);
-            std::cout << labels[index].word << endl;
-        }
-
         index++;
     }
     fin.close();
