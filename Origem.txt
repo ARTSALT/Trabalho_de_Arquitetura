@@ -1,0 +1,42 @@
+#include <iostream>;
+#include <fstream>;
+#include <string>;
+
+using namespace std;
+
+struct Label
+{
+    string word;
+    int linha = 0;
+};
+
+
+void main()
+{
+    system("chcp 1252");
+
+    Label labels[50];
+
+    ifstream fin;
+    fin.open("teste.asm", ios_base::in);
+
+    int index = 0;
+    while (fin.good())
+    {
+        fin >> labels[index].word;
+
+        if (labels[index].word[labels[index].word.length() - 1] != ':')
+        {
+            labels[index].word.erase();
+            index--;
+        }
+        else
+        {
+            labels[index].word.erase(labels[index].word.length() - 1);
+            std::cout << labels[index].word << endl;
+        }
+
+        index++;
+    }
+    fin.close();
+}
