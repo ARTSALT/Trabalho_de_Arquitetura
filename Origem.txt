@@ -1,6 +1,8 @@
 #include <iostream>;
 #include <fstream>;
 #include <string>;
+#include <sstream>;
+#include <bitset>;
 
 using namespace std;
 
@@ -10,8 +12,22 @@ struct Label
     int linha = 0;
 };
 
+struct instrucao
+{
+    string word[4];
+    string codigo[5];
+    string funct;
+    int hex;
+};
 
-void main()
+
+string getReg(string a);
+string FuncR(string a);
+string FuncI(string a);
+string FuncJ(string a);
+
+
+int main()
 {
     system("chcp 1252");
 
@@ -21,30 +37,12 @@ void main()
     ifstream fin;
     fin.open("teste.asm", ios_base::in);
     ifstream ler;
-    ler.open ("Teste.asm", ios_base::in);
+    ler.open("teste.asm", ios_base::in);
+    ofstream binario("binario.txt");
+    ofstream hex("hexadecimal.hex");
 
-    int index = 0;
-    int linha = 0;
 
-
-    //while (fin.good())
-    //{
-    //    fin >> labels[index].word;
-    //    
-    //    if (labels[index].word[labels[index].word.length() - 1] != ':')
-    //    {
-    //        labels[index].word.erase();
-    //        index--;
-    //    }
-    //    else
-    //    {
-    //        labels[index].word.pop_back();
-    //        labels[index].linha = linha;
-    //        cout << labels[index].word << ": " << labels[index].linha << endl;
-    //    }
-    //    index++;
-    //}
-
+    int index = 0, linha = 0, k = 0;
     while (fin.good())
     {
         getline(fin, texto);
@@ -52,11 +50,382 @@ void main()
         size_t found = texto.find(':');
         if (found != string::npos)
         {
-            labels[index].word.insert(0, texto, 0, found);
-            labels[index].linha = index;
-            cout << labels[index].word << ": " << labels[index].linha << endl;
+            labels[k].word.insert(0, texto, 0, found);
+            labels[k].linha = index;
+            k++;
         }
         index++;
     }
     fin.close();
+
+
+
+    int linha = 0; 
+    while (ler.good())
+    {
+        instrucao inst;
+        int i = 0;
+        getline(ler, texto);
+        linha++;
+
+        size_t found = texto.find(':');
+        if (found != string::npos)
+        {
+            texto.erase(0, found + 2);
+        }
+
+
+        while (found != string::npos)
+        {
+            found = texto.find(',');
+            if (found != string::npos)
+            {
+                texto.erase(found, 1);
+            }
+        }
+
+
+        while (found != string::npos)
+        {
+            found = texto.find('(' || ')');
+            if (found != string::npos)
+            {
+                texto.insert(found, 1, ' ');
+                texto.erase(found + 1, 1);
+                
+            }
+        }
+
+        
+        stringstream tin;
+        tin.str(texto);
+        
+        tin >> inst.word[i];
+
+        //tipo J
+        if (inst.word[i] == "sll" || "srl" || "jr" || "mfhi" || "mflo" || "mult" || "multu" || "div" || "divu" || "add" || "addu" || "sub"
+            || "subu" || "and" || "or" || "slt" || "sltu" || "mul")
+        {
+            //pega o opcode, posição 0
+            inst.codigo[i] = FuncR(inst.word[i]);
+            i++;
+
+
+            while (tin.good())
+            {
+                tin >> inst.word[i];
+                inst.codigo[i] = getReg(inst.word[i]);
+                i++;
+            }
+
+            //printagem
+            if (inst.word[0] == "sll" || "srl")
+            {
+                int t0 = stoi(inst.word[3]);
+                        //opcode + rs +       tr       +      rd        +          shamt            +     funct     ;
+                texto = "00000000000" + inst.codigo[2] + inst.codigo[1] + bitset<5>(t0).to_string() + inst.codigo[0];
+
+                binario << texto << endl;
+            }
+            else if (inst.word[0] == "jr")
+            {
+                 texto = "000000" + inst.codigo[1] + "000000000000000" + inst.codigo[0];
+                 binario << texto << endl;
+            }
+            else if (inst.word[0] == "mfhi" || "mflo")
+            {
+                texto = "0000000000000000" + inst.codigo[1] + "00000" + inst.codigo[0];
+                binario << texto << endl;
+            }
+            else if (inst.word[0] == "mult" || "multu" || "div" || "divu")
+            {
+                texto = "000000" + inst.codigo[1] + inst.codigo[2] + "00000" + "00000" + inst.codigo[0];
+                binario << texto << endl;
+            }
+            else if (inst.word[0] == "add" || "addu" || "sub" || "subu" || "and" || "or" || "slt" || "sltu")
+            {
+                texto = "000000" + inst.codigo[2] + inst.codigo[3] + inst.codigo[1] + "00000" + inst.codigo[0];
+                binario << texto << endl;
+            }
+            else if (inst.word[0] == "mul")
+            {
+                texto = "0011100" + inst.codigo[2] + inst.codigo[3] + inst.codigo[1] + "00000" + inst.codigo[0];
+                binario << texto << endl;
+            }
+        }
+        //tipo I
+        else if (inst.word[i] == "beq" || "bne" || "addi" || "addiu" || "slti" || "sltiu" || "andi" || "ori" || "lui" || "lw" || "sw")
+        {
+            //pega o opcode, posição 0
+            inst.codigo[i] = FuncI(inst.word[i]);
+            i++;
+
+
+
+            while (tin.good())
+            {
+                tin >> inst.word[i];
+                inst.codigo[i] = getReg(inst.word[i]);
+                if (inst.codigo[i] == "a" && !isdigit(inst.word[i][0]))
+                {
+                    for (int j = 0; j < index; j++)
+                    {
+                        if (inst.word[i] == labels[index].word)
+                        {
+                            inst.codigo[i] = linha - labels[index].linha - 1;
+                        }
+                    }
+                }
+                i++;
+            }
+
+
+            if (inst.word[0] == "beq" || "bne")
+            {
+                int t0 = stoi(inst.codigo[3]);
+
+                texto = inst.codigo[0] + inst.codigo[1] + inst.codigo[2] + bitset<16>(t0).to_string();
+                binario << texto << endl;
+            }
+            else if (inst.word[0] == "addi" || "addiu" || "slti" || "sltiu" || "andi" || "ori")
+            {
+                int t0 = stoi(inst.codigo[3]);
+
+                texto = inst.codigo[0] + inst.codigo[2] + inst.codigo[1] + bitset<16>(t0).to_string();
+                binario << texto << endl;
+            }
+            else if (inst.word[0] == "lui")
+            {
+                int t0 = stoi(inst.word[2]);
+                bitset<16> set(t0);
+                t0 = set.to_ulong() << 4;
+
+                texto = inst.codigo[0] + "00000" + inst.codigo[1] + to_string(t0);
+            }
+            else if (inst.word[0] == "lw" || "sw")
+            {
+                int t0 = stoi(inst.codigo[2]);
+
+                texto = inst.codigo[0] + inst.codigo[3] + inst.codigo[1] + bitset<16>(t0).to_string();
+            }
+        }
+        //tipo R
+        else if (inst.word[i] == "j" || "jal")
+        {
+            inst.codigo[i] = FuncJ(inst.word[i]);
+            i++;
+
+            while (tin.good())
+            {
+                tin >> inst.word[i];
+                inst.codigo[i] = getReg(inst.word[i]);
+                i++;
+            }
+
+            if (inst.codigo[i] == "a" && !isdigit(inst.word[i][0]))
+            {
+                for (int j = 0; j < index; j++)
+                {
+                    if (inst.word[i] == labels[index].word)
+                    {
+                        inst.codigo[i] = 4000000 + labels[index].linha - 1;
+                    }
+                }
+            }
+            
+            int t0 = stoi(inst.codigo[2]);
+
+            texto = inst.codigo[0] + bitset<26>(t0).to_string();;
+        }
+
+    }
+}
+
+string getReg(string a) {
+    string b;
+
+    if (a == "$zero") b = "00000";
+
+    if (a == "$at") b = "00001";
+
+    if (a == "$v0") b = "00010";
+
+    if (a == "$v1") b = "00011";
+
+    if (a == "$a0") b = "00100";
+
+    if (a == "$a1") b = "00101";
+
+    if (a == "$a2") b = "00110";
+
+    if (a == "$a3") b = "00111";
+
+    if (a == "$t0") b = "01000";
+
+    if (a == "$t1") b = "01001";
+
+    if (a == "$t2") b = "01010";
+
+    if (a == "$t3") b = "01011";
+
+    if (a == "$t4") b = "01100";
+
+    if (a == "$t5") b = "01101";
+
+    if (a == "$t6") b = "01110";
+
+    if (a == "$t7") b = "01111";
+
+    if (a == "$s0") b = "10000";
+
+    if (a == "$s1") b = "10001";
+
+    if (a == "$s2") b = "10010";
+
+    if (a == "$s3") b = "10011";
+
+    if (a == "$s4") b = "10100";
+
+    if (a == "$s5") b = "10101";
+
+    if (a == "$s6") b = "10110";
+
+    if (a == "$s7") b = "10111";
+
+    if (a == "$t8") b = "11000";
+
+    if (a == "$t9") b = "11001";
+
+    if (a == "$ko") b = "11010";
+
+    if (a == "$k1") b = "11011";
+
+    if (a == "$gp") b = "11100";
+
+    if (a == "$sp") b = "11101";
+
+    if (a == "$fp") b = "11110";
+
+    if (a == "$ra") b = "11111";
+
+    return b = "a";
+}
+
+string FuncR(string a)
+
+{
+    string b;
+
+    if (a == "sll")
+    {
+        return b = "000000";
+    }
+    else if (a == "srl")
+    {
+        return b = "000010";
+    }
+    else if (a == "jr")
+    {
+        return b = "001000";
+    }
+    else if (a == "mfhi")
+    {
+        return b = "010000";
+    }
+    else if (a == "mhlo")
+    {
+        return b = "010010";
+    }
+    else if (a == "mult")
+    {
+        return b = "011000";
+    }
+    else if (a == "multu")
+    {
+        return b = "011001";
+    }
+    else if (a == "div")
+    {
+        return b = "011010";
+    }
+    else if (a == "divu")
+    {
+        return b = "011011";
+    }
+    else if (a == "add")
+    {
+        return b = "100000";
+    }
+    else if (a == "addu")
+    {
+        return b = "100001";
+    }
+    else if (a == "sub")
+    {
+        return b = "100010";
+    }
+    else if (a == "subu")
+    {
+        return b = "100011";
+    }
+    else if (a == "and")
+    {
+        return b = "100110";
+    }
+    else if (a == "or")
+    {
+        return b = "100111";
+    }
+    else if (a == "slt")
+    {
+        return b = "101010";
+    }
+    else if (a == "sltu")
+    {
+        return b = "101011";
+    }
+    else if (a == "mul")
+    {
+        return b = "000010";
+    }
+    else
+    {
+        return b;
+    }
+}
+
+string FuncI(string a)
+{
+    string b;
+    if (a == "beq") b = "000100";
+
+    if (a == "bne") b = "000101";
+
+    if (a == "addi") b = "001000";
+
+    if (a == "addiu") b = "001001";
+
+    if (a == "slti") b = "001010";
+
+    if (a == "stliu") b = "001011";
+
+    if (a == "andi") b = "001100";
+
+    if (a == "ori") b = "001101";
+
+    if (a == "lui") b = "001111";
+
+    if (a == "lw") b = "100011";
+
+    if (a == "sw") b = "101011";
+
+    return b;
+}
+
+string FuncJ(string a) 
+{
+    string b;
+    if (a == "j") b = "000010";
+    if (a == "jal") b = "000011";
+    return b;
 }
