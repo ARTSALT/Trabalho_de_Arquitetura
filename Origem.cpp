@@ -264,69 +264,69 @@ int main()
 string getReg(string a) {
     string b;
 
-    if (a == "$zero") return b = "00000";
+    if (a == "$zero" || a == "$0") return b = "00000";
 
-    else if (a == "$at") return b = "00001";
+    else if (a == "$at" || a == "$1") return b = "00001";
 
-    else if (a == "$v0") return  b = "00010";
+    else if (a == "$v0" || a == "$2") return  b = "00010";
 
-    else if (a == "$v1") return b = "00011";
+    else if (a == "$v1" || a == "$3") return b = "00011";
 
-    else if (a == "$a0") return b = "00100";
+    else if (a == "$a0" || a == "$4") return b = "00100";
 
-    else if (a == "$a1") return b = "00101";
+    else if (a == "$a1" || a == "$5") return b = "00101";
 
-    else if (a == "$a2") return b = "00110";
+    else if (a == "$a2" || a == "$6") return b = "00110";
 
-    else if (a == "$a3") return b = "00111";
+    else if (a == "$a3" || a == "$7") return b = "00111";
 
-    else if (a == "$t0") return b = "01000";
+    else if (a == "$t0" || a == "$8") return b = "01000";
 
-    else if (a == "$t1") return b = "01001";
+    else if (a == "$t1" || a == "$9") return b = "01001";
 
-    else if (a == "$t2") return b = "01010";
+    else if (a == "$t2" || a == "$10") return b = "01010";
 
-    else if (a == "$t3") return b = "01011";
+    else if (a == "$t3" || a == "$11") return b = "01011";
 
-    else if (a == "$t4") return b = "01100";
+    else if (a == "$t4" || a == "$12") return b = "01100";
 
-    else if (a == "$t5") return b = "01101";
+    else if (a == "$t5" || a == "$13") return b = "01101";
 
-    else if (a == "$t6") return b = "01110";
+    else if (a == "$t6" || a == "$14") return b = "01110";
 
-    else if (a == "$t7") return b = "01111";
+    else if (a == "$t7" || a == "$15") return b = "01111";
 
-    else if (a == "$s0") return b = "10000";
+    else if (a == "$s0" || a == "$16") return b = "10000";
 
-    else if (a == "$s1") return b = "10001";
+    else if (a == "$s1" || a == "$17") return b = "10001";
 
-    else if (a == "$s2") return b = "10010";
+    else if (a == "$s2" || a == "$18") return b = "10010";
 
-    else if (a == "$s3") return b = "10011";
+    else if (a == "$s3" || a == "$19") return b = "10011";
 
-    else if (a == "$s4") return b = "10100";
+    else if (a == "$s4" || a == "$20") return b = "10100";
 
-    else if (a == "$s5") return b = "10101";
+    else if (a == "$s5" || a == "$21") return b = "10101";
 
-    else if (a == "$s6") return b = "10110";
+    else if (a == "$s6" || a == "$22") return b = "10110";
 
-    else if (a == "$s7") return b = "10111";
+    else if (a == "$s7" || a == "$23") return b = "10111";
 
-    else if (a == "$t8") return b = "11000";
+    else if (a == "$t8" || a == "$24") return b = "11000";
 
-    else if (a == "$t9") return b = "11001";
+    else if (a == "$t9" || a == "$25") return b = "11001";
 
-    else if (a == "$ko") return b = "11010";
+    else if (a == "$k0" || a == "$26") return b = "11010";
 
-    else if (a == "$k1") return b = "11011";
+    else if (a == "$k1" || a == "$27") return b = "11011";
 
-    else if (a == "$gp") return b = "11100";
+    else if (a == "$gp" || a == "$28") return b = "11100";
 
-    else if (a == "$sp") return b = "11101";
+    else if (a == "$sp" || a == "$29") return b = "11101";
 
-    else if (a == "$fp") return b = "11110";
+    else if (a == "$fp" || a == "$30") return b = "11110";
 
-    else if (a == "$ra") return b = "11111";
+    else if (a == "$ra" || a == "$31") return b = "11111";
 
     else { return b = "a"; }
 }
